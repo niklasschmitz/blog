@@ -51,6 +51,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Stein Variational Gradient Descent (SVGD)" href="../svgd/svgd.html" />
@@ -213,6 +215,11 @@ const thebe_selector_output = ".output, .cell_output"
             <nav id="bd-toc-nav" aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#initial-surface">
+   Initial surface
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#minimize-the-surface-area">
    Minimize the surface area
   </a>
@@ -243,6 +250,11 @@ const thebe_selector_output = ".output, .cell_output"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#initial-surface">
+   Initial surface
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#minimize-the-surface-area">
    Minimize the surface area
   </a>
@@ -261,9 +273,7 @@ const thebe_selector_output = ".output, .cell_output"
             
               <div>
                 
-  <div class="tex2jax_ignore mathjax_ignore section" id="soap-films-and-minimal-surfaces">
-<h1>Soap films and minimal surfaces<a class="headerlink" href="#soap-films-and-minimal-surfaces" title="Permalink to this headline">¶</a></h1>
-<div class="cell docutils container">
+  <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
@@ -273,6 +283,13 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 </div>
+<div class="tex2jax_ignore mathjax_ignore section" id="soap-films-and-minimal-surfaces">
+<h1>Soap films and minimal surfaces<a class="headerlink" href="#soap-films-and-minimal-surfaces" title="Permalink to this headline">¶</a></h1>
+<p><img alt="" src="../_images/min_surface.gif" /></p>
+<p>A 2D surface sitting in 3D space can be approximated by a triangle mesh.
+In its simplest form this can be a set of vertices indexed by <span class="math notranslate nohighlight">\(i\in\{0,1,2,...,n-1\}\)</span>
+together with vertex positions <span class="math notranslate nohighlight">\(v[i]\in\mathbb{R}^3\)</span> and triangles as triples of indices <span class="math notranslate nohighlight">\((i,j,k)\)</span>.
+From this data one can compute the total surface area as a sum over all triangle areas:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">):</span>
@@ -284,23 +301,29 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 </div>
+<p>Soap films can be modeled as surfaces minimizing their area.
+Starting from an initial triangle mesh,
+here we use gradient descent to iteratively optimize interior vertex positions
+while keeping prescribed boundary vertices fixed.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Constrained minimization by projected gradient descent.&quot;&quot;&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minimization by gradient descent.&quot;&quot;&quot;</span>
     <span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="n">g</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">loss</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">loss</span><span class="p">)(</span><span class="n">v</span><span class="p">)</span>
         <span class="n">constrained_g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">-</span> <span class="n">step_size</span> <span class="o">*</span> <span class="n">constrained_g</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="o">-</span> <span class="n">step_size</span> <span class="o">*</span> <span class="n">constrained_g</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">cb_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">cb</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">cb_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">cb</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span>
 </pre></div>
 </div>
 </div>
 </div>
+<div class="section" id="initial-surface">
+<h2>Initial surface<a class="headerlink" href="#initial-surface" title="Permalink to this headline">¶</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">30</span>
@@ -308,26 +331,11 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">nb</span><span class="p">)</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># collect top and bottom row indices to constrain</span>
+
+<span class="c1"># collect top and bottom row indices to constrain</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">b</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">max</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## cylinder</span>
+
+<span class="c1">## cylinder</span>
 <span class="c1"># x = jnp.cos(a)</span>
 <span class="c1"># y = jnp.sin(a)</span>
 <span class="c1"># z = b</span>
@@ -345,10 +353,13 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f715c073310&gt;
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
 </pre></div>
 </div>
-<img alt="../_images/min_surfaces_6_1.png" src="../_images/min_surfaces_6_1.png" />
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f0c7c0ac7c0&gt;
+</pre></div>
+</div>
+<img alt="../_images/min_surfaces_6_2.png" src="../_images/min_surfaces_6_2.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -363,12 +374,16 @@ const thebe_selector_output = ".output, .cell_output"
 
 <span class="n">v</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
 <span class="n">triangles</span> <span class="o">=</span> <span class="n">make_cylinder_triangulation</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">na</span><span class="p">)</span>
-<span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">triangles</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;vertex positions:    &quot;</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;triangles:           &quot;</span><span class="p">,</span> <span class="n">triangles</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;constrained vertices:&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((3000, 3), (5800, 3), (200,))
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>vertex positions:     (3000, 3)
+triangles:            (5800, 3)
+constrained vertices: (200,)
 </pre></div>
 </div>
 </div>
@@ -390,22 +405,28 @@ const thebe_selector_output = ".output, .cell_output"
 <img alt="../_images/min_surfaces_8_0.png" src="../_images/min_surfaces_8_0.png" />
 </div>
 </div>
+</div>
 <div class="section" id="minimize-the-surface-area">
 <h2>Minimize the surface area<a class="headerlink" href="#minimize-the-surface-area" title="Permalink to this headline">¶</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">)</span>
-<span class="n">cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;i=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> loss=</span><span class="si">{</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">cb</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;i=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> loss=</span><span class="si">{</span><span class="n">loss</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">cb</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>i=0 loss=113.60426330566406
+i=1000 loss=79.60592651367188
 i=2000 loss=76.50721740722656
+i=3000 loss=74.66070556640625
 i=4000 loss=72.79273223876953
+i=5000 loss=73.46154022216797
 i=6000 loss=74.27364349365234
+i=7000 loss=74.36503601074219
 i=8000 loss=74.12223052978516
+i=9000 loss=73.84172058105469
 </pre></div>
 </div>
 </div>
@@ -434,21 +455,21 @@ i=8000 loss=74.12223052978516
 <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="n">clear_output</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;area = </span><span class="si">{</span><span class="n">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     
-<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">frame</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
 
-<span class="n">num_steps</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">num_steps</span> <span class="o">=</span> <span class="mi">6000</span>
 <span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">callback</span><span class="p">(</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="c1"># one final callback on the result</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>t=10000
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>t=6000
 </pre></div>
 </div>
 </div>
