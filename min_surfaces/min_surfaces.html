@@ -297,7 +297,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">20</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">30</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">jnp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">na</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">nb</span><span class="p">)</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
@@ -313,11 +313,8 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## constrain top and bottom row only</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># collect top and bottom row indices to constrain</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">b</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">max</span><span class="p">()))[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1">## constrain vertices close to top and bottom</span>
-<span class="c1"># c = jnp.where((jnp.abs(b - b.min()) &lt; 0.05) | (jnp.abs(b - b.max()) &lt; 0.05))[0]</span>
 </pre></div>
 </div>
 </div>
@@ -342,7 +339,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f41fc0227f0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f715c073310&gt;
 </pre></div>
 </div>
 <img alt="../_images/min_surfaces_6_1.png" src="../_images/min_surfaces_6_1.png" />
@@ -365,7 +362,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((2000, 3), (3800, 3), (200,))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>((3000, 3), (5800, 3), (200,))
 </pre></div>
 </div>
 </div>
@@ -398,11 +395,11 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>i=0 loss=113.39701843261719
-i=2000 loss=74.79481506347656
-i=4000 loss=76.22454833984375
-i=6000 loss=76.36495971679688
-i=8000 loss=76.3675537109375
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>i=0 loss=113.60426330566406
+i=2000 loss=76.50721740722656
+i=4000 loss=72.79273223876953
+i=6000 loss=74.27364349365234
+i=8000 loss=74.12223052978516
 </pre></div>
 </div>
 </div>
@@ -452,8 +449,7 @@ i=8000 loss=76.3675537109375
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">frames_periodic</span> <span class="o">=</span> <span class="n">frames</span> <span class="o">+</span> <span class="n">frames</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">gif</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">frames_periodic</span><span class="p">,</span> <span class="s1">&#39;min_surface.gif&#39;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">between</span><span class="o">=</span><span class="s2">&quot;startend&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gif</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="s1">&#39;min_surface.gif&#39;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">between</span><span class="o">=</span><span class="s2">&quot;startend&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
