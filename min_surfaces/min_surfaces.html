@@ -270,11 +270,11 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">faces</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">triangle_area</span><span class="p">(</span><span class="n">face</span><span class="p">):</span>
-        <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">face</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">triangle_area</span><span class="p">(</span><span class="n">triangle</span><span class="p">):</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">triangle</span>
         <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">triangle_area</span><span class="p">)(</span><span class="n">faces</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">triangle_area</span><span class="p">)(</span><span class="n">triangles</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -303,6 +303,11 @@ const thebe_selector_output = ".output, .cell_output"
 <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">nb</span><span class="p">)</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
 </pre></div>
 </div>
 </div>
@@ -338,7 +343,7 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f7908231400&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection at 0x7f41fc0227f0&gt;
 </pre></div>
 </div>
 <img alt="../_images/min_surfaces_6_1.png" src="../_images/min_surfaces_6_1.png" />
@@ -352,12 +357,11 @@ const thebe_selector_output = ".output, .cell_output"
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">i</span><span class="o">*</span><span class="n">nj</span><span class="o">+</span><span class="n">j</span><span class="p">,</span>  <span class="n">i</span><span class="o">*</span><span class="n">nj</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">nj</span>, (i+1)*nj+(j+1)%nj], 
                           <span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">nj</span><span class="o">+</span><span class="n">j</span><span class="p">,</span>     <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nj</span><span class="o">+</span><span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nj</span><span class="o">+</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="k">nj</span>]])
     <span class="n">triangles</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="n">tri</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))(</span><span class="n">jnp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ni</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nj</span><span class="p">))</span>
-    <span class="n">triangles</span> <span class="o">=</span> <span class="n">triangles</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">triangles</span>
+    <span class="k">return</span> <span class="n">triangles</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
 <span class="n">v</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
-<span class="n">faces</span> <span class="o">=</span> <span class="n">make_cylinder_triangulation</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">na</span><span class="p">)</span>
-<span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">faces</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">triangles</span> <span class="o">=</span> <span class="n">make_cylinder_triangulation</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">na</span><span class="p">)</span>
+<span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">triangles</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
 </div>
@@ -369,14 +373,14 @@ const thebe_selector_output = ".output, .cell_output"
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">GnBu_r</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">v</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">v</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">*</span><span class="mf">1.2</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot_trisurf</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">triangles</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot_trisurf</span><span class="p">(</span><span class="n">v</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">triangles</span><span class="o">=</span><span class="n">triangles</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">c</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
 
-<span class="n">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -388,7 +392,7 @@ const thebe_selector_output = ".output, .cell_output"
 <h2>Minimize the surface area<a class="headerlink" href="#minimize-the-surface-area" title="Permalink to this headline">¶</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">surface_area</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">)</span>
 <span class="n">cb</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;i=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> loss=</span><span class="si">{</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">cb</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 </pre></div>
@@ -400,18 +404,13 @@ i=2000 loss=74.79481506347656
 i=4000 loss=76.22454833984375
 i=6000 loss=76.36495971679688
 i=8000 loss=76.3675537109375
-i=10000 loss=76.60641479492188
-i=12000 loss=77.15914916992188
-i=14000 loss=77.92729187011719
-i=16000 loss=77.30198669433594
-i=18000 loss=77.47931671142578
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_mesh</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_mesh</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">triangles</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -432,7 +431,7 @@ i=18000 loss=77.47931671142578
 <span class="nd">@gif</span><span class="o">.</span><span class="n">frame</span>
 <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="n">clear_output</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">plot_mesh</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">triangles</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     
 <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -441,7 +440,7 @@ i=18000 loss=77.47931671142578
     <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
 
 <span class="n">num_steps</span> <span class="o">=</span> <span class="mi">10000</span>
-<span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span> <span class="n">num_steps</span><span class="o">=</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">cb</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">cb_every</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">callback</span><span class="p">(</span><span class="n">num_steps</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span> <span class="c1"># one final callback on the result</span>
 </pre></div>
 </div>
