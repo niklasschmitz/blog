@@ -5,3 +5,4 @@ format: jb-book
 root: intro
 chapters:
 - file: svgd/svgd
+- file: min_surfaces/min_surfaces
